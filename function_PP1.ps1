@@ -6,4 +6,5 @@ function PP1{
  $str = $str.Replace(' ', '')
  $array = $str.split(";")
  $array | Out-File PP1.txt
+
 }
