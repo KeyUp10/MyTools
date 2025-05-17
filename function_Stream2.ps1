@@ -3,4 +3,5 @@
 function Stream2{
 
  Get-ChildItem -Name -Recurse | Out-File Stream2.txt
+
 }
