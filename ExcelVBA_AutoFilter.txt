@@ -1,0 +1,11 @@
+'*******************************
+ActiveWorkbook.ActiveSheet.Range("A1").AutoFilter 9, "*PoC*", xlFilterValues
+'*******************************
+
+'*******************************
+ActiveWorkbook.ActiveSheet.Range("A1").AutoFilter 10, "*悪用*", xlFilterValues
+'*******************************
+
+'*******************************
+ActiveWorkbook.ActiveSheet.Range("A1").AutoFilter 10, Array("*悪用*", "*PoC*"), xlFilterValues
+'*******************************
