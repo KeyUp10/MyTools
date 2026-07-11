@@ -1,5 +1,6 @@
 ﻿$taskName = "OpenSharePointOnLogon"
 $xmlPath = "C:\ProgramData\CompanyScripts\OpenSharePoint.xml"
+$ps1Path = "C:\ProgramData\CompanyScripts\OpenSharePoint.ps1"
 $scriptDir = "C:\ProgramData\CompanyScripts"
 
 # フォルダ作成
@@ -7,25 +8,38 @@ if (!(Test-Path $scriptDir)) {
     New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
 }
 
-# XML タスクを書き出し（安全な @" ～ "@ 形式）
+# PowerShell スクリプト書き出し
+$ps1Content = @"
+$hour = (Get-Date).Hour
+
+if ($hour -ge 6 -and $hour -le 10) {
+    Start-Process "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" `
+        "--app=https://exmaple.com --window-size=800,600 --window-position=112,84"
+}
+"@
+$ps1Content | Out-File -FilePath $ps1Path -Encoding UTF8 -Force
+
+# XML タスク書き出し（@" ～ "@ で安全）
 $xmlContent = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>Open SharePoint on morning logon</Description>
+    <Description>Open SharePoint on morning logon or unlock</Description>
   </RegistrationInfo>
 
   <Triggers>
+    <!-- ログオン時 -->
     <LogonTrigger>
       <Enabled>true</Enabled>
-
-      <!-- 朝6時〜10時の間だけ有効 -->
-      <StartBoundary>2025-01-01T06:00:00</StartBoundary>
-      <EndBoundary>2025-01-01T10:00:00</EndBoundary>
-
-      <!-- 遅延（必要に応じて変更可能） -->
       <Delay>PT15S</Delay>
     </LogonTrigger>
+
+    <!-- 再接続（SessionUnlock） -->
+    <SessionStateChangeTrigger>
+      <Enabled>true</Enabled>
+      <StateChange>SessionUnlock</StateChange>
+      <Delay>PT15S</Delay>
+    </SessionStateChangeTrigger>
   </Triggers>
 
   <Principals>
@@ -57,16 +71,13 @@ $xmlContent = @"
 
   <Actions Context="Users">
     <Exec>
-      <Command>"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"</Command>
-
-      <!-- アプリモード + ウィンドウサイズ + 画面中央配置 -->
-      <Arguments>--app="https://exmaple.com" --window-size=800,600 --window-position=112,84</Arguments>
+      <Command>"powershell.exe"</Command>
+      <Arguments>-ExecutionPolicy Bypass -WindowStyle Hidden -File "C:\ProgramData\CompanyScripts\OpenSharePoint.ps1"</Arguments>
     </Exec>
   </Actions>
 </Task>
 "@
 
-# XML を書き出し（UTF-8 で OK）
 $xmlContent | Out-File -FilePath $xmlPath -Encoding UTF8 -Force
 
 # 既存タスク削除
