@@ -7,12 +7,12 @@ if (!(Test-Path $scriptDir)) {
     New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
 }
 
-# XML タスクを書き出し
-$xmlContent = @'
+# XML タスクを書き出し（安全な @" ～ "@ 形式）
+$xmlContent = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
-    <Description>Open SharePoint on Friday morning logon</Description>
+    <Description>Open SharePoint on morning logon</Description>
   </RegistrationInfo>
 
   <Triggers>
@@ -23,15 +23,7 @@ $xmlContent = @'
       <StartBoundary>2025-01-01T06:00:00</StartBoundary>
       <EndBoundary>2025-01-01T10:00:00</EndBoundary>
 
-      <!-- 毎週金曜のみ -->
-      <ScheduleByWeek>
-        <DaysOfWeek>
-          <Friday />
-        </DaysOfWeek>
-        <WeeksInterval>1</WeeksInterval>
-      </ScheduleByWeek>
-
-      <!-- 15秒遅延 -->
+      <!-- 遅延（必要に応じて変更可能） -->
       <Delay>PT15S</Delay>
     </LogonTrigger>
   </Triggers>
@@ -72,7 +64,9 @@ $xmlContent = @'
     </Exec>
   </Actions>
 </Task>
-'@
+"@
+
+# XML を書き出し（UTF-8 で OK）
 $xmlContent | Out-File -FilePath $xmlPath -Encoding UTF8 -Force
 
 # 既存タスク削除
