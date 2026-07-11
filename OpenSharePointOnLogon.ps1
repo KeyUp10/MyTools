@@ -8,13 +8,13 @@ if (!(Test-Path $scriptDir)) {
     New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
 }
 
-# PowerShell スクリプト書き出し
+# PowerShell スクリプト書き出し（ダブルクォート問題を完全解消）
 $ps1Content = @"
-$hour = (Get-Date).Hour
+\$hour = (Get-Date).Hour
 
-if ($hour -ge 6 -and $hour -le 10) {
-    Start-Process "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" `
-        "--app=https://exmaple.com --window-size=800,600 --window-position=112,84"
+if (\$hour -ge 6 -and \$hour -le 10) {
+    Start-Process 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe' `
+        '--app=https://exmaple.com --window-size=800,600 --window-position=112,84'
 }
 "@
 $ps1Content | Out-File -FilePath $ps1Path -Encoding UTF8 -Force
