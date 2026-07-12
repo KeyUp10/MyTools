@@ -1,6 +1,7 @@
 ﻿$taskName = "OpenSharePointOnLogon"
 $xmlPath = "C:\ProgramData\CompanyScripts\OpenSharePoint.xml"
 $ps1Path = "C:\ProgramData\CompanyScripts\OpenSharePoint.ps1"
+$vbsPath = "C:\ProgramData\CompanyScripts\RunHidden.vbs"
 $scriptDir = "C:\ProgramData\CompanyScripts"
 
 # フォルダ作成
@@ -8,18 +9,24 @@ if (!(Test-Path $scriptDir)) {
     New-Item -Path $scriptDir -ItemType Directory -Force | Out-Null
 }
 
-# PowerShell スクリプト書き出し（ダブルクォート問題を完全解消）
-$ps1Content = @"
-\$hour = (Get-Date).Hour
+# PowerShell スクリプト書き出し（展開なし）
+$ps1Content = @'
+$hour = (Get-Date).Hour
 
-if (\$hour -ge 6 -and \$hour -le 10) {
+if ($hour -ge 6 -and $hour -le 10) {
     Start-Process 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe' `
         '--app=https://exmaple.com --window-size=800,600 --window-position=112,84'
 }
-"@
+'@
 $ps1Content | Out-File -FilePath $ps1Path -Encoding UTF8 -Force
 
-# XML タスク書き出し（@" ～ "@ で安全）
+# VBS 書き出し（黒い画面ゼロ）
+$vbsContent = @'
+CreateObject("Wscript.Shell").Run "powershell.exe -ExecutionPolicy Bypass -File C:\ProgramData\CompanyScripts\OpenSharePoint.ps1", 0, True
+'@
+$vbsContent | Out-File -FilePath $vbsPath -Encoding ASCII -Force
+
+# XML タスク書き出し（@" ～ "@）
 $xmlContent = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -28,13 +35,11 @@ $xmlContent = @"
   </RegistrationInfo>
 
   <Triggers>
-    <!-- ログオン時 -->
     <LogonTrigger>
       <Enabled>true</Enabled>
       <Delay>PT15S</Delay>
     </LogonTrigger>
 
-    <!-- 再接続（SessionUnlock） -->
     <SessionStateChangeTrigger>
       <Enabled>true</Enabled>
       <StateChange>SessionUnlock</StateChange>
@@ -71,8 +76,8 @@ $xmlContent = @"
 
   <Actions Context="Users">
     <Exec>
-      <Command>"powershell.exe"</Command>
-      <Arguments>-ExecutionPolicy Bypass -WindowStyle Hidden -File "C:\ProgramData\CompanyScripts\OpenSharePoint.ps1"</Arguments>
+      <Command>"wscript.exe"</Command>
+      <Arguments>"C:\ProgramData\CompanyScripts\RunHidden.vbs"</Arguments>
     </Exec>
   </Actions>
 </Task>
