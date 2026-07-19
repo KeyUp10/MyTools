@@ -15,7 +15,7 @@ $hour = (Get-Date).Hour
 
 if ($hour -ge 6 -and $hour -le 10) {
     Start-Process 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe' `
-        '--app=https://exmaple.com --window-size=800,600 --window-position=112,84'
+        '--app="https://tenant.sharepoint.com/sites/xxx/Shared%20Documents/sample.pptx?action=embedview" --window-size=800,600 --window-position=112,84'
 }
 '@
 $ps1Content | Out-File -FilePath $ps1Path -Encoding UTF8 -Force
